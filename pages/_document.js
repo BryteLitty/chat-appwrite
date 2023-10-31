@@ -1,13 +1,18 @@
 import { Html, Head, Main, NextScript } from 'next/document'
+import { AuthProvider } from '@/utilities/AuthContext'
+
 
 export default function Document() {
   return (
     <Html lang="en">
-      <Head />
-      <body>
-        <Main />
-        <NextScript />
+      <AuthProvider>
+        <Head>
+        </Head>
+        <body color='yellow'>
+          <Main />
+          <NextScript />
       </body>
+      </AuthProvider>
     </Html>
   )
 }
