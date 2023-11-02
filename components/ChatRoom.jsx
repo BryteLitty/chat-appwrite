@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import client, { databases, DATABASE_ID, MESSAGES_COLLECTION_ID } from '@/utilities/appwriteConfig';
-import { ID, Query } from 'appwrite';
+import { ID, Query, Role, Permission } from 'appwrite';
 import { Trash2 } from 'react-feather';
+import Header from './Header';
+import { useAuth } from '@/utilities/AuthContext';
 
 const ChatRoom = () => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [messageBody, setMessagesBody] = useState('');
   const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -38,14 +41,21 @@ const ChatRoom = () => {
     e.preventDefault();
 
     let payload = {
+      user_id: user.$id,
+      username: user.name,
       body: messageBody
     };
+
+    let permissions = [
+      Permission.write(Role.user(user.$id)) 
+    ]
 
     let response = await databases.createDocument(
       DATABASE_ID,
       MESSAGES_COLLECTION_ID,
       ID.unique(),
       payload,
+      permissions,
     )
     
     // setMessages(prevState => [response, ...messages])
@@ -75,6 +85,7 @@ const ChatRoom = () => {
 
   return (
     <main className='container'>
+      <Header />
       <div className="room--container">
         <form onSubmit={handleSubmit} id="message--form" className="message--form">
           <div>
@@ -100,11 +111,30 @@ const ChatRoom = () => {
               messages.map(message => (
                 <div key={message.$id} className='messages--wrapper'>
                   <div className='message--header'>
+
+                    <p>
+                      {message?.username ? (
+                          <span className='text-blue-300 font-bold mr-5'>{message.username}</span>
+                        ): (
+                          <span className='text-blue-300 font-bold mr-5'>Anonymous User</span>
+                        )
+                      }
+                      
                     <small className='message--timestamp my-5'>{new Date(message.$createdAt).toLocaleString(undefined, options)}</small>
-                    <Trash2 
-                      onClick={() => deleteMessage(message.$id)} 
-                      className='delete--btn mt-14'
-                    />
+                    
+                    </p>
+
+                    {
+                      message.$permissions.includes(`delete(\"user:${user.$id}\")`) ? (
+                       
+                        <Trash2 
+                          onClick={() => deleteMessage(message.$id)} 
+                          className='delete--btn mt-14'
+                        />
+
+                      ) : (<p className='mt-20'></p>)
+                    }
+
                   </div>
                   <div>
                     <span className='message--body'>{message.body}</span>

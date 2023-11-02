@@ -1,11 +1,11 @@
 import React, { useEffect, useState} from 'react'
 import { useRouter } from 'next/router';
 import { useAuth } from '@/utilities/AuthContext';
-
+import Link from 'next/link';
 
 const LoginPage = () => {
   const router = useRouter();
-  const {user} = useAuth();
+  const {user, handleUserLogin} = useAuth();
   const [credentials, setCredentials] = useState({email:"", password:""})
 
   useEffect(() => {
@@ -25,7 +25,7 @@ const LoginPage = () => {
   return (
     <div className='auth--container'>
       <div className="form--wrapper">
-        <form>
+        <form onSubmit={(e) => {handleUserLogin(e, credentials)}}>
           <div className="field--wrapper">
             <label>Email:</label>
             <input 
@@ -50,7 +50,7 @@ const LoginPage = () => {
             />
           </div>
 
-          <div className="fild--wrapper">
+          <div className="field--wrapper">
 
             <input 
               type="submit" 
@@ -60,6 +60,10 @@ const LoginPage = () => {
 
           </div>
         </form>
+        
+        <p className='my-5'>Don't have an account? <Link href="/register">Create an account</Link>
+        </p>
+
       </div>
     </div>
   )
